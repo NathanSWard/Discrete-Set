@@ -35,6 +35,25 @@
     "system_error": "cpp",
     "typeinfo": "cpp",
     "any": "cpp",
-    "memory": "cpp"
+    "memory": "cpp",
+    "functional": "cpp",
+    "atomic": "cpp",
+    "bitset": "cpp",
+    "chrono": "cpp",
+    "cstdarg": "cpp",
+    "cstddef": "cpp",
+    "cstring": "cpp",
+    "ctime": "cpp",
+    "algorithm": "cpp",
+    "iterator": "cpp",
+    "map": "cpp",
+    "memory_resource": "cpp",
+    "numeric": "cpp",
+    "random": "cpp",
+    "ratio": "cpp",
+    "regex": "cpp",
+    "set": "cpp",
+    "string": "cpp",
+    "iomanip": "cpp"
   }
 }
