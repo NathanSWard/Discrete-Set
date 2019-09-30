@@ -3,29 +3,32 @@
 #include "catch.hpp"
 #include "../set.hpp"
 
+using discrete::set;
+using discrete::init_list;
+
 TEST_CASE("Constructor") {
     SECTION("Default") {
-        Set<int> s{};
+        set<int> s{};
         SECTION("Copy") {
-            Set<int> const copy{s};
+            set<int> const copy{s};
             CHECK(copy == s);
         }
         SECTION("Move") {
-            Set<int> const copy{s};
-            Set<int> move{std::move(s)};
+            set<int> const copy{s};
+            set<int> move{std::move(s)};
             CHECK(move == copy);
         }
     }
 
     SECTION("Construct with values") {
-        Set<int, char, float> const s{init_list, 1, 'a', 3.14f};
+        set<int, char, float> const s{init_list, 1, 'a', 3.14f};
         CHECK(std::is_same_v<std::variant<int, char, float>, typename decltype(s)::value_types>);
         CHECK(s.size() == 3);
     }
 }
 
 TEST_CASE("Lookup Methods") {
-    Set<int, char, float> const s{init_list, 1, 'a', 3.14f};
+    set<int, char, float> const s{init_list, 1, 'a', 3.14f};
 
     SECTION("size") {
         CHECK(s.size() == 3);
@@ -46,12 +49,12 @@ TEST_CASE("Lookup Methods") {
     }
 }
 
-TEST_CASE("Set Operations") {
-    Set const s1{init_list, 1, 'a'};
-    Set const s2{init_list, 'a', 3.14f};
-    Set const s3{init_list, 0.0f};
+TEST_CASE("set Operations") {
+    set const s1{init_list, 1, 'a'};
+    set const s2{init_list, 'a', 3.14f};
+    set const s3{init_list, 0.0f};
 
-    using result_t = Set<int, char, float>;
+    using result_t = set<int, char, float>;
 
     SECTION("Comparison") {
         CHECK(s1 != s2);
@@ -101,14 +104,14 @@ TEST_CASE("Set Operations") {
 
     SECTION("power_set") {
         {
-            using s1_t = Set<int, char>;
+            using s1_t = set<int, char>;
             std::vector<s1_t> v{s1_t{}, s1_t{init_list, 1}, s1_t{init_list, 'a'}, s1_t{init_list, 1, 'a'}};
             auto result{s1.power_set()};
             for (auto&& s : v) 
                 CHECK(std::find(result.begin(), result.end(), s) != result.end());
         }
         {
-            using s3_t = Set<float>;
+            using s3_t = set<float>;
             std::vector<s3_t> v{s3_t{}, s3_t{init_list, 0.f}};
             auto result{P(s3)};
             for (auto&& s : v) 
@@ -117,7 +120,7 @@ TEST_CASE("Set Operations") {
     }
 
     SECTION("subset/superset") {
-        Set<int> const s{init_list, 1};
+        set<int> const s{init_list, 1};
         
         SECTION("is_subest") {
             CHECK(s.is_subset(s1));
@@ -159,7 +162,7 @@ TEST_CASE("Set Operations") {
 
     SECTION("is_finite") {
         CHECK(s1.is_finite());
-        CHECK(Set<int>{}.is_finite());
+        CHECK(set<int>{}.is_finite());
     }
 
     SECTION("is_infinite") {
