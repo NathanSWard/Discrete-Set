@@ -12,19 +12,19 @@
 #include <utility>
 #include <variant>
 
+namespace discrete {
+
 template<class...>
-class Set;
+class set;
 
 struct init_list_t { constexpr explicit init_list_t() noexcept = default; };
 inline constexpr init_list_t init_list{};
 
 template <class ...T> 
-class Set {
+class set {
 private:
     template <class... Us>
-    friend class Set;
-
-    friend struct std::hash<Set<T...>>;
+    friend class set;
     
     using variant_t = detail::remove_duplicates_t<std::variant, T...>;
     using container_t = std::unordered_set<variant_t>;
@@ -35,12 +35,15 @@ public:
     using value_types = variant_t;
 
     // Constructors
-    Set() = default;
-    Set(Set const&) = default;
-    Set(Set&&) = default;
+    set() {};
+    set(set const&) = default;
+    set(set&&) = default;
 
     template<class ...Us>
-    explicit Set(init_list_t, Us&&... us);
+    explicit set(init_list_t, Us&&... us);
+     
+    template<class It, class Fn>
+    explicit set(It, It, Fn&&);  
 
     // Modifiers
     template<class U, class ...Args>
@@ -67,71 +70,71 @@ public:
     auto end() const noexcept {return set_.end();}
     auto cend() const noexcept { return set_.cend(); }
     
-    // Set Operations
+    // set Operations
     template<class ...U>
-    bool operator==(Set<U...> const&) const noexcept;
+    bool operator==(set<U...> const&) const noexcept;
     template<class ...U>
-    bool operator!=(Set<U...> const& other) const noexcept {return !(*this == other);}
+    bool operator!=(set<U...> const& other) const noexcept {return !(*this == other);}
 
     template<class ...U>
-    auto intersection(Set<U...> const&) const;
+    auto intersection(set<U...> const&) const;
     template<class ...U>
-    auto operator&(Set<U...> const& other) const {return intersection(other);}
+    auto operator&(set<U...> const& other) const {return intersection(other);}
     
     template<class ...U>
-    auto Union(Set<U...> const&) const; 
+    auto Union(set<U...> const&) const; 
     template<class ...U>
-    auto operator|(Set<U...> const& other) const {return Union(other);}
+    auto operator|(set<U...> const& other) const {return Union(other);}
 
     template<class ...U>
-    auto difference(Set<U...> const&) const;
+    auto difference(set<U...> const&) const;
     template<class ...U>
-    auto operator-(Set<U...> const& other) const {return difference(other);} 
+    auto operator-(set<U...> const& other) const {return difference(other);} 
 
     template<class ...U>
-    auto symmetric_difference(Set<U...> const&) const;
+    auto symmetric_difference(set<U...> const&) const;
     template<class ...U>
-    auto operator^(Set<U...> const& other) const {return symmetric_difference(other);}  
+    auto operator^(set<U...> const& other) const {return symmetric_difference(other);}  
     
     template<class ...U>
-    auto cross_product(Set<U...> const&) const ;
+    auto cross_product(set<U...> const&) const ;
     template<class ...U>
-    auto operator*(Set<U...> const& other) const {return cross_product(other);}
+    auto operator*(set<U...> const& other) const {return cross_product(other);}
 
     auto power_set() const;
     template<class ...U>
-    friend auto P(Set<U...> const& s) {return s.power_set();};
+    friend auto P(set<U...> const& s) {return s.power_set();};
 
     size_t cardinality() const noexcept {return size();}
 
     template<class ...U>
-    bool is_subset(Set<U...> const&) const noexcept;
+    bool is_subset(set<U...> const&) const noexcept;
     template<class ...U>
-    bool operator<=(Set<U...> const& other) {return is_subset(other);}
+    bool operator<=(set<U...> const& other) {return is_subset(other);}
     
     template<class ...U>
-    bool is_proper_subset(Set<U...> const&) const noexcept;
+    bool is_proper_subset(set<U...> const&) const noexcept;
     template<class ...U>
-    bool operator<(Set<U...> const& other) {return is_proper_subset(other);}
+    bool operator<(set<U...> const& other) {return is_proper_subset(other);}
     
     template<class ...U>
-    bool is_superset(Set<U...> const&) const noexcept; 
+    bool is_superset(set<U...> const&) const noexcept; 
     template<class ...U>
-    bool operator>=(Set<U...> const& other) const noexcept {return is_superset(other);}
+    bool operator>=(set<U...> const& other) const noexcept {return is_superset(other);}
     
     template<class ...U>
-    bool is_proper_superset(Set<U...> const&) const noexcept; 
+    bool is_proper_superset(set<U...> const&) const noexcept; 
     template<class ...U>
-    bool operator>(Set<U...> const& other) const noexcept {return is_proper_superset(other);} 
+    bool operator>(set<U...> const& other) const noexcept {return is_proper_superset(other);} 
 
     template<class ...U>
-    bool is_equivalent(Set<U...> const&) const noexcept;
+    bool is_equivalent(set<U...> const&) const noexcept;
 
     template<class ...U>
-    bool is_overlapping(Set<U...> const&) const noexcept;
+    bool is_overlapping(set<U...> const&) const noexcept;
 
     template<class ...U>
-    bool is_disjoint(Set<U...> const&) const noexcept;
+    bool is_disjoint(set<U...> const&) const noexcept;
 
     bool is_finite() const noexcept;
     bool is_infinite() const noexcept;
@@ -139,35 +142,46 @@ public:
 };
 
 template<class... Us>
-explicit Set(init_list_t, Us&&... us) -> Set<Us...>;
+explicit set(init_list_t, Us&&... us) -> set<Us...>;
 
 template<class U, class... Us>
-explicit Set(init_list_t, U&& u, Us&&... us) -> Set<U, Us...>;
+explicit set(init_list_t, U&&, Us&&...) -> set<U, Us...>;
 
 template<class ...T>
 template<class ...Us>
-Set<T...>::Set(init_list_t, Us&&... us)  {
-    static_assert(sizeof...(Us) > 0, "Set must have at least one type");
+set<T...>::set(init_list_t, Us&&... us)  {
+    static_assert(sizeof...(Us) > 0, "set must have at least one type");
     set_.reserve(sizeof...(Us));
     (emplace(std::in_place_type<Us>, std::forward<Us>(us)), ...);
 }
 
+template<class... T>
+template<class It, class Fn>
+set<T...>::set(It first, It last, Fn&& fn) {
+    static_assert(std::conjunction_v<std::is_invocable_r_v<bool, Fn, typename It::value_type>>, 
+        "set::set function parameter must process Iterator's value_type and return a bool");
+    std::for_each(first, last, [fn = std::forward<Fn>(fn), this](auto&& val){
+                if (fn(val))
+                    emplace(val); 
+    }); 
+}
+
 template<class ...T>
 template<class U, class ...Args>
-void Set<T...>::emplace(std::in_place_type_t<U>, Args&&... args) {
+void set<T...>::emplace(std::in_place_type_t<U>, Args&&... args) {
     static_assert(std::is_constructible_v<U, Args...>, "Invalid arguments for type U");
     set_.emplace(std::in_place_type<std::remove_cvref_t<U>>, std::forward<Args>(args)...);
 }
 
 template<class ...T>
 template<class ...Args>
-void Set<T...>::emplace(Args&&... args) {
+void set<T...>::emplace(Args&&... args) {
     (emplace(std::in_place_type<Args>, std::forward<Args>(args)), ...);
 }
 
 template<class ...T>
 template<class U>
-bool Set<T...>::erase(U&& u) {
+bool set<T...>::erase(U&& u) {
     using arg_t = std::remove_cvref_t<U>;
     if constexpr (std::is_same_v<arg_t, variant_t> || detail::has_type_v<arg_t, variant_t>) {
         if (set_.erase(std::forward<U>(u)) > 0)
@@ -181,7 +195,7 @@ bool Set<T...>::erase(U&& u) {
 
 template<class ...T>
 template<class U>
-bool Set<T...>::contains(U&& val) const noexcept {
+bool set<T...>::contains(U&& val) const noexcept {
     using arg_t = std::remove_cvref_t<U>;
     if constexpr (std::is_same_v<arg_t, variant_t> || detail::has_type_v<arg_t, variant_t>)
         return empty() ? false : set_.find(val) != set_.end();
@@ -191,14 +205,14 @@ bool Set<T...>::contains(U&& val) const noexcept {
 
 template<class ...T>
 template<class ...U>
-bool Set<T...>::operator==(Set<U...> const& b) const noexcept {
+bool set<T...>::operator==(set<U...> const& b) const noexcept {
     if (size() != b.size())
         return false;        
-    if constexpr (std::is_same_v<variant_t, typename Set<U...>::variant_t>)
+    if constexpr (std::is_same_v<variant_t, typename set<U...>::variant_t>)
         return set_ == b.set_;
     else {
         for (auto const& var : set_) {
-            if(!std::visit([&](auto&& val){return b.contains(val);}, var))
+            if (!std::visit([&](auto&& val){return b.contains(val);}, var))
                 return false;
         }
         return true;
@@ -207,22 +221,22 @@ bool Set<T...>::operator==(Set<U...> const& b) const noexcept {
 
 template<class ...T>
 template<class ...U>
-auto Set<T...>::intersection(Set<U...> const& other) const {
-    detail::set_intersection_t<Set, Set<T...>, Set<U...>> set;
+auto set<T...>::intersection(set<U...> const& other) const {
+    detail::set_intersection_t<set, set<T...>, set<U...>> set;
     if (empty() || other.empty())
         return set;
-    if constexpr (std::is_same_v<value_types, typename Set<U...>::value_types>) {
+    if constexpr (std::is_same_v<value_types, typename set<U...>::value_types>) {
         auto const& [small, big] = size() < other.size() 
-            ? std::tie(set_, other.set_) : std::tie(other.set_, set_);
+            ? std::tie(*this, other) : std::tie(other, *this);
         for (auto const& var : small) {
-            if (big.find(var) != big.end())
+            if (big.contains(var))
                 std::visit([&](auto const& val){set.emplace(val);}, var);
         }
     }
     else {
-        for (auto const& var : set_)
-            std::visit([&](auto const& val){
-                if constexpr (detail::has_type_v<std::remove_cvref_t<decltype(val)>, typename Set<U...>::variant_t>) {
+        for (auto const& var : *this)
+            std::visit([&](auto const& val) {
+                if constexpr (detail::has_type_v<std::remove_cvref_t<decltype(val)>, typename set<U...>::variant_t>) {
                     if (other.contains(val))
                         set.emplace(val);
                 }
@@ -233,9 +247,9 @@ auto Set<T...>::intersection(Set<U...> const& other) const {
 
 template<class ...T>
 template<class ...U>
-auto Set<T...>::Union(Set<U...> const& other) const {
-    if constexpr (std::is_same_v<value_types, typename Set<U...>::value_types>) {
-        Set<T...> set;
+auto set<T...>::Union(set<U...> const& other) const {
+    if constexpr (std::is_same_v<value_types, typename set<U...>::value_types>) {
+        set<T...> set;
         for (auto&& var : *this)
             set.set_.emplace(var);
         for (auto&& var : other)
@@ -243,7 +257,7 @@ auto Set<T...>::Union(Set<U...> const& other) const {
         return set;
     }
     else {
-        detail::remove_duplicates_t<Set, T..., U...> set;
+        detail::remove_duplicates_t<set, T..., U...> set;
         for (auto&& var : *this)
             std::visit([&](auto&& val) { set.emplace(val); }, var);
         for (auto&& var : other)
@@ -254,11 +268,11 @@ auto Set<T...>::Union(Set<U...> const& other) const {
 
 template<class ...T>
 template<class ...U>
-auto Set<T...>::difference(Set<U...> const& other) const {
-    Set<T...> set;
+auto set<T...>::difference(set<U...> const& other) const {
+    set<T...> set;
     for (auto const& var : set_) {
         std::visit([&](auto&& val){
-            if constexpr (detail::has_type_v<std::remove_cvref_t<decltype(val)>, typename Set<U...>::variant_t>) {
+            if constexpr (detail::has_type_v<std::remove_cvref_t<decltype(val)>, typename set<U...>::variant_t>) {
                 if (!other.contains(val))
                     set.emplace(val);
             }
@@ -271,8 +285,8 @@ auto Set<T...>::difference(Set<U...> const& other) const {
 
 template<class ...T>
 template<class ...U>
-auto Set<T...>::symmetric_difference(Set<U...> const& other) const {
-    detail::remove_duplicates_t<Set, T..., U...> set;
+auto set<T...>::symmetric_difference(set<U...> const& other) const {
+    detail::remove_duplicates_t<set, T..., U...> set;
     auto insertElem = [&](auto const& set_a, auto const& set_b) {
         for (auto const& var : set_a) {
             std::visit([&](auto&& val){
@@ -288,13 +302,13 @@ auto Set<T...>::symmetric_difference(Set<U...> const& other) const {
 
 template<class ...T>
 template<class ...U>
-auto Set<T...>::cross_product(Set<U...> const& other) const {
-    std::vector<detail::remove_duplicates_t<Set, T..., U...>> r_set;
+auto set<T...>::cross_product(set<U...> const& other) const {
+    std::vector<detail::remove_duplicates_t<set, T..., U...>> r_set;
     if (!empty() && !other.empty()) {
         r_set.reserve(size() * other.size());
         for (int i = 0; i < size(); ++i) {
             for (int j = 0; j < other.size(); ++j) {
-                detail::remove_duplicates_t<Set, T..., U...> sub_set;
+                detail::remove_duplicates_t<set, T..., U...> sub_set;
                 auto fill_sub_set = [&](auto&& iter, int index) {
                     std::advance(iter, index);
                     std::visit([&](auto const& val){
@@ -311,13 +325,13 @@ auto Set<T...>::cross_product(Set<U...> const& other) const {
 }
 
 template<class ...T>
-auto Set<T...>::power_set() const {
-    std::vector<Set<T...>> r_set;
+auto set<T...>::power_set() const {
+    std::vector<set<T...>> r_set;
     r_set.reserve(size() * size());
     size_t const total = 1 << size();
     for (size_t i = 0; i < total; ++i) {
         auto make_sub_set = [&]{
-            Set<T...> sub_set;
+            set<T...> sub_set;
             for (size_t j = 0; j < size(); ++j) {
                 if ((i >> j) & 1) {
                     auto iter = begin();
@@ -336,7 +350,7 @@ auto Set<T...>::power_set() const {
 
 template<class ...T>
 template<class ...U>
-bool Set<T...>::is_subset(Set<U...> const& other) const noexcept {
+bool set<T...>::is_subset(set<U...> const& other) const noexcept {
     if (size() > other.size())
         return false;
     for (auto const& var : set_) {
@@ -348,7 +362,7 @@ bool Set<T...>::is_subset(Set<U...> const& other) const noexcept {
 
 template<class ...T>
 template<class ...U>
-bool Set<T...>::is_proper_subset(Set<U...> const& other) const noexcept {
+bool set<T...>::is_proper_subset(set<U...> const& other) const noexcept {
     if (size() >= other.size())
         return false;
     for (auto const& var : set_) {
@@ -360,25 +374,25 @@ bool Set<T...>::is_proper_subset(Set<U...> const& other) const noexcept {
 
 template<class ...T>
 template<class ...U>
-bool Set<T...>::is_superset(Set<U...> const& other) const noexcept {
+bool set<T...>::is_superset(set<U...> const& other) const noexcept {
     return other.is_subset(*this);
 }
 
 template<class ...T>
 template<class ...U>
-bool Set<T...>::is_proper_superset(Set<U...> const& other) const noexcept {
+bool set<T...>::is_proper_superset(set<U...> const& other) const noexcept {
     return other.is_proper_subset(*this);
 }
 
 template<class ...T>
 template<class ...U>
-bool Set<T...>::is_equivalent(Set<U...> const& other) const noexcept {
+bool set<T...>::is_equivalent(set<U...> const& other) const noexcept {
     return size() == other.size();
 }
 
 template<class ...T>
 template<class ...U>
-bool Set<T...>::is_overlapping(Set<U...> const& other) const noexcept {
+bool set<T...>::is_overlapping(set<U...> const& other) const noexcept {
     for (auto const& var : set_) {
         if (std::visit([&](auto const& val) {return other.contains(val) ? true : false;}, var)) 
             return true;
@@ -388,7 +402,7 @@ bool Set<T...>::is_overlapping(Set<U...> const& other) const noexcept {
 
 template<class ...T>
 template<class ...U>
-bool Set<T...>::is_disjoint(Set<U...> const& other) const noexcept {
+bool set<T...>::is_disjoint(set<U...> const& other) const noexcept {
     for (auto const& var : set_) {
         if (std::visit([&](auto const& val) {return other.contains(val) ? true : false;}, var))
             return false;
@@ -397,22 +411,22 @@ bool Set<T...>::is_disjoint(Set<U...> const& other) const noexcept {
 }
 
 template<class ...T>
-bool Set<T...>::is_finite() const noexcept {
+bool set<T...>::is_finite() const noexcept {
     return true;
 }
 
 template<class ...T>
-bool Set<T...>::is_infinite() const noexcept {
+bool set<T...>::is_infinite() const noexcept {
     return false;
 }
 
 template<class ...T>
-bool Set<T...>::is_singleton() const noexcept {
+bool set<T...>::is_singleton() const noexcept {
     return size() == 1;
 }
 
 //==================================================================================
-// Empty Set Specialization
+// Empty set Specialization
 //==================================================================================
 struct empty_iterator {
     inline constexpr static std::variant<std::monostate> var_{};
@@ -423,20 +437,20 @@ struct empty_iterator {
 };
 
 template<>
-class Set<> {
+class set<> {
 private:
     template <class... Us>
-    friend class Set;
+    friend class set;
     friend class empty_iterator;
 
     inline constexpr static empty_iterator iter_{};
 
-    friend struct std::hash<Set<>>;
+    friend struct std::hash<set<>>;
 public:
     using value_types = std::variant<std::monostate>;
 
     // Constructors
-    constexpr Set() noexcept {}
+    constexpr set() noexcept {}
 
     // Lookup
     constexpr size_t size() const noexcept { return 0; }
@@ -452,91 +466,91 @@ public:
     auto end() const noexcept {return iter_;}
     auto cend() const noexcept { return iter_; }
     
-    // Set Operations
+    // set Operations
     template<class ...U>
-    constexpr bool operator==(Set<U...> const&) const noexcept {
-        if constexpr (std::is_same_v<Set<U...>, Set<>>)
+    constexpr bool operator==(set<U...> const&) const noexcept {
+        if constexpr (std::is_same_v<set<U...>, set<>>)
             return true;
         else
             return false;
     }
 
     template<class ...U>
-    constexpr bool operator!=(Set<U...> const& other) const noexcept {return !(*this == other);}
+    constexpr bool operator!=(set<U...> const& other) const noexcept {return !(*this == other);}
 
     template<class... Args>
     void emplace(Args&&...) const noexcept {}
 
     template<class ...U>
-    constexpr auto intersection(Set<U...> const&) const noexcept {return *this; }
+    constexpr auto intersection(set<U...> const&) const noexcept {return *this; }
     template<class ...U>
-    constexpr auto operator&(Set<U...> const& other) const noexcept {return intersection(other);}
+    constexpr auto operator&(set<U...> const& other) const noexcept {return intersection(other);}
     
     template<class ...U>
-    constexpr auto Union(Set<U...> const& other) const noexcept {return other;}
+    constexpr auto Union(set<U...> const& other) const noexcept {return other;}
     template<class ...U>
-    constexpr auto operator|(Set<U...> const& other) const noexcept {return Union(other);}
+    constexpr auto operator|(set<U...> const& other) const noexcept {return Union(other);}
 
     template<class ...U>
-    constexpr auto difference(Set<U...> const&) const noexcept {return *this;}
+    constexpr auto difference(set<U...> const&) const noexcept {return *this;}
     template<class ...U>
-    constexpr auto operator-(Set<U...> const& other) const noexcept {return difference(other);} 
+    constexpr auto operator-(set<U...> const& other) const noexcept {return difference(other);} 
 
     template<class ...U>
-    constexpr auto symmetric_difference(Set<U...> const& other) const noexcept {return other;}
+    constexpr auto symmetric_difference(set<U...> const& other) const noexcept {return other;}
     template<class ...U>
-    constexpr auto operator^(Set<U...> const& other) const noexcept{return symmetric_difference(other);}  
+    constexpr auto operator^(set<U...> const& other) const noexcept{return symmetric_difference(other);}  
     
     template<class ...U>
-    constexpr auto cross_product(Set<U...> const&) const noexcept {return *this;}
+    constexpr auto cross_product(set<U...> const&) const noexcept {return *this;}
     template<class ...U>
-    constexpr auto operator*(Set<U...> const& other) const noexcept {return cross_product(other);}
+    constexpr auto operator*(set<U...> const& other) const noexcept {return cross_product(other);}
 
     constexpr auto power_set() const noexcept {return *this;}
     template<class ...U>
-    friend constexpr auto P(Set<U...> const& set) noexcept {return set.power_set();};
+    friend constexpr auto P(set<U...> const& set) noexcept {return set.power_set();};
 
     constexpr size_t cardinality() const noexcept {return 0;}
 
     template<class ...U>
-    constexpr bool is_subset(Set<U...> const&) const noexcept {return true;}
+    constexpr bool is_subset(set<U...> const&) const noexcept {return true;}
     template<class ...U>
-    constexpr bool operator<=(Set<U...> const& other) {return is_subset(other);}
+    constexpr bool operator<=(set<U...> const& other) {return is_subset(other);}
     
     template<class ...U>
-    bool is_proper_subset(Set<U...> const&) const noexcept {
-        if constexpr (std::is_same_v<Set<U...>, Set<>>)
+    bool is_proper_subset(set<U...> const&) const noexcept {
+        if constexpr (std::is_same_v<set<U...>, set<>>)
             return false;
         else
             return true;
     }
     template<class ...U>
-    bool operator<(Set<U...> const& other) {return is_proper_subset(other);}
+    bool operator<(set<U...> const& other) {return is_proper_subset(other);}
     
     template<class ...U>
-    bool is_superset(Set<U...> const&) const noexcept {
-        if constexpr (std::is_same_v<Set<U...>, Set<>>)
+    bool is_superset(set<U...> const&) const noexcept {
+        if constexpr (std::is_same_v<set<U...>, set<>>)
             return true;
         else
             return false;
     }
 
     template<class ...U>
-    bool operator>=(Set<U...> const& other) const noexcept {return is_superset(other);}
+    bool operator>=(set<U...> const& other) const noexcept {return is_superset(other);}
     
     template<class ...U>
-    bool is_proper_superset(Set<U...> const&) const noexcept {return false;}
+    bool is_proper_superset(set<U...> const&) const noexcept {return false;}
     template<class ...U>
-    bool operator>(Set<U...> const& other) const noexcept {return is_proper_superset(other);} 
+    bool operator>(set<U...> const& other) const noexcept {return is_proper_superset(other);} 
 
     template<class ...U>
-    bool is_equivalent(Set<U...> const& other) const noexcept {return *this == other;}
+    bool is_equivalent(set<U...> const& other) const noexcept {return *this == other;}
 
     template<class ...U>
-    bool is_overlapping(Set<U...> const&) const noexcept {return true;}
+    bool is_overlapping(set<U...> const&) const noexcept {return true;}
 
     template<class ...U>
-    bool is_disjoint(Set<U...> const&) const noexcept {return false;}
+    bool is_disjoint(set<U...> const&) const noexcept {return false;}
 
     bool is_finite() const noexcept {return true;}
     bool is_infinite() const noexcept {return false;}
@@ -545,13 +559,15 @@ public:
 
 namespace std {
     template<>
-    struct hash<Set<>> {
+    struct hash<set<>> {
         hash() noexcept {};
-        std::size_t operator()(Set<> const& s) const noexcept {
-            using hash_t = std::hash<typename Set<>::value_types>;
-            return hash_t{}(*Set<>::iter_);
+        std::size_t operator()(set<> const& s) const noexcept {
+            using hash_t = std::hash<typename set<>::value_types>;
+            return hash_t{}(*set<>::iter_);
         }
     };
 }
 
-using empty_set_t = Set<>;
+using empty_set_t = set<>;
+
+} // namespace discrete
