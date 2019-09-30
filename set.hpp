@@ -23,7 +23,7 @@ inline constexpr init_list_t init_list{};
 template <class ...T> 
 class set {
 private:
-    template <class... Us>
+    template<class ...U>
     friend class set;
     
     using variant_t = detail::remove_duplicates_t<std::variant, T...>;
@@ -35,7 +35,7 @@ public:
     using value_types = variant_t;
 
     // Constructors
-    set() {};
+    set() = default;
     set(set const&) = default;
     set(set&&) = default;
 
@@ -222,15 +222,15 @@ bool set<T...>::operator==(set<U...> const& b) const noexcept {
 template<class ...T>
 template<class ...U>
 auto set<T...>::intersection(set<U...> const& other) const {
-    detail::set_intersection_t<set, set<T...>, set<U...>> set;
+    detail::set_intersection_t<set, set<T...>, set<U...>> r_set;
     if (empty() || other.empty())
-        return set;
+        return r_set;
     if constexpr (std::is_same_v<value_types, typename set<U...>::value_types>) {
         auto const& [small, big] = size() < other.size() 
             ? std::tie(*this, other) : std::tie(other, *this);
         for (auto const& var : small) {
             if (big.contains(var))
-                std::visit([&](auto const& val){set.emplace(val);}, var);
+                std::visit([&](auto const& val){r_set.emplace(val);}, var);
         }
     }
     else {
@@ -238,11 +238,11 @@ auto set<T...>::intersection(set<U...> const& other) const {
             std::visit([&](auto const& val) {
                 if constexpr (detail::has_type_v<std::remove_cvref_t<decltype(val)>, typename set<U...>::variant_t>) {
                     if (other.contains(val))
-                        set.emplace(val);
+                        r_set.emplace(val);
                 }
             }, var);
     }
-    return set;
+    return r_set;
 }
 
 template<class ...T>
@@ -269,35 +269,35 @@ auto set<T...>::Union(set<U...> const& other) const {
 template<class ...T>
 template<class ...U>
 auto set<T...>::difference(set<U...> const& other) const {
-    set<T...> set;
+    set<T...> r_set;
     for (auto const& var : set_) {
         std::visit([&](auto&& val){
-            if constexpr (detail::has_type_v<std::remove_cvref_t<decltype(val)>, typename set<U...>::variant_t>) {
+            if constexpr (detail::has_type_v<std::remove_cvref_t<decltype(val)>, typename set<U...>::value_types>) {
                 if (!other.contains(val))
-                    set.emplace(val);
+                    r_set.emplace(val);
             }
             else
-                set.emplace(val);
+                r_set.emplace(val);
         }, var);
     }
-    return set;
+    return r_set;
 }
 
 template<class ...T>
 template<class ...U>
 auto set<T...>::symmetric_difference(set<U...> const& other) const {
-    detail::remove_duplicates_t<set, T..., U...> set;
+    detail::remove_duplicates_t<set, T..., U...> r_set;
     auto insertElem = [&](auto const& set_a, auto const& set_b) {
         for (auto const& var : set_a) {
             std::visit([&](auto&& val){
                 if (!set_b.contains(val))
-                    set.emplace(val);
+                    r_set.emplace(val);
             }, var);
         }
     };
     insertElem(*this, other);
     insertElem(other, *this);
-    return set;
+    return r_set;
 }
 
 template<class ...T>

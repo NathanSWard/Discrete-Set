@@ -115,7 +115,7 @@ struct has_type<T, Container<Us...>> : std::disjunction<std::is_same<T, Us>...>
 {}; 
 
 template<class T, class Container>
-inline constexpr bool has_type_v = has_type<T, Container>::value;
+inline static constexpr bool has_type_v = has_type<T, Container>::value;
 
 //==================================================================================
 
