@@ -1,4 +1,5 @@
-##discrete::set##
+##set##
+* `Inside namespace::discrete`
 * Constructors
   * `set()`
   * `set(set const&)`
@@ -11,15 +12,15 @@
   * `template<class It, class Fn> set(It first, It last, Fn fn)`
     * `It`: Iterator type
     * `Fn`: Function type
-      * must return bool and process It::value_type
-    * creates a set from the range of iterators filtering using Fn 
+      * must return bool and process `It::value_type`
+    * creates a set from the range of iterators filtering using `Fn` 
 * Modifiers
   * `template<class U, class Args>`
   * `void emplace(std::in_place_type<U>, Args&&... args)`
     * in place constructs type U with arguments args
   * `template<class ...Args`
-  * `void emplace(Args&&... args)
-    * inserts all arguments into the set`
+  * `void emplace(Args&&... args)`
+    * inserts all arguments into the set
     * effetively calls
       * `(emplace<decltype(Args)>(args), ...);`
   * `template<class U>`
@@ -47,30 +48,34 @@
     * note: the set types do not have to match
   * `template<class ...U>`
   * `auto intersection(set<U...> const&)`
+    * `operator &`
     * returns a set of the elements that only appear in both sets
     * return type: `set<T..., U...>` with no duplicate types 
   * `template<class ...U>`
   * `auto Union(set<U...> const&)`
+    * `operator |`
     * returns a set of both sets' elements (removing duplicate elements) 
     * return type: `set<T..., U...>` with no duplicate types
   * `template<class ...U>`
   * `auto difference(set<U...> const&)`
+    * `operator -`
     * returns a set of of elements only found in the first set 
     * return type: `set<T...>`
   * `template<class ...U>`
   * `auto symmetric_difference(set<U...> const&)`
+    * `operator ^`
     * returns a set of of elements only found in the first set or second set 
     * return type: `set<T..., U...>` with no duplicate types
   * `template<class ...U>`
   * `auto cross_product(set<U...> const&)`
+    * `operator *`
     * returns a vector of sets with the result of both set's cartesian product 
     * return type: `std::vector<set<T..., U...>>`
   * `template<class ...U>`
   * `auto power_set()`
+    * same as: `auto P(set<T...> const&)`
     * returns a vector of sets with the result of this set's power set 
     * return type: `std::vector<set<T...>>`
-    * alternate syntax
-      * auto P(set<T...> const&)
   * `size_t cardinality()` `size_t size()`
     * returns the size of the set
   * `template<class ...U>`  
@@ -101,7 +106,7 @@
   * `bool is_singleton()` 
     * returns true is this set has one element
 * Empty Set
-  * discrete::set<>
+  * `discrete::set<>`
     * a template specializtion of an empty set
     * it is not possible to add elements to this set
     * methods such as emplace() will not fail, but rather simply to nothing 
