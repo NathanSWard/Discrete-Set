@@ -79,16 +79,20 @@
   * `size_t cardinality()` `size_t size()`
     * returns the size of the set
   * `template<class ...U>`  
-  * `bool is_subset(set<U...> const&)`  
+  * `bool is_subset(set<U...> const&)`
+    * `operator <=`
     * returns true is this set is a sub set of the parameter 
   * `template<class ...U>`  
-  * `bool is_proper_subset(set<U...> const&)`  
+  * `bool is_proper_subset(set<U...> const&)` 
+    * `operator <`
     * returns true is this set is a proper sub set of the parameter 
   * `template<class ...U>`  
-  * `bool is_superset(set<U...> const&)`  
+  * `bool is_superset(set<U...> const&)`
+    * `operator >=`
     * returns true is this set is a super set of the parameter 
   * `template<class ...U>`  
   * `bool is_proper_superset(set<U...> const&)`  
+    * `operator >`
     * returns true is this set is a proper superset set of the parameter 
   * `template<class ...U>`  
   * `bool is_equivalent(set<U...> const&)`  
